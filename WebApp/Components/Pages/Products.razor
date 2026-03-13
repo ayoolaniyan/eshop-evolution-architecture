@@ -1,7 +1,13 @@
 ﻿@page "/products"
 @inject ApiServiceClient ApiServiceClient
 @attribute [StreamRendering(true)]
-@rendermode InteractiveServer
+@attribute [OutputCache(Duration = 5)]
+
+@* @rendermode @(new InteractiveServerRenderMode(prerender: false)) *@
+@* @rendermode InteractiveServer *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@* NOTE: If you add rendermode, add item buttons not working but output cache works *@
 
 <PageTitle>Products</PageTitle>
 
@@ -55,7 +61,7 @@ else
 @code {
     private List<Product>? products;
     private bool showNotification;
-
+    
     protected override async Task OnInitializedAsync()
     {        
         products = await ApiServiceClient.GetProducts();

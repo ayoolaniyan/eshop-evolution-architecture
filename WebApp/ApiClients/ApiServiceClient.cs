@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ApiService.Models;
+
+using Basket.Models;
+using Catalog.Models;
+using Ordering.Models;
 
 namespace WebApp.ApiClients
 {
@@ -11,49 +10,47 @@ namespace WebApp.ApiClients
         // Product Endpoints
         public async Task<List<Product>> GetProducts()
         {
-            var response = await httpClient.GetFromJsonAsync<List<Product>>($"/apiservice/products");
+            var response = await httpClient.GetFromJsonAsync<List<Product>>($"/products");
             return response!;
         }
 
         public async Task<Product> GetProductById(int id)
         {
-            var response = await httpClient.GetFromJsonAsync<Product>($"/apiservice/products/{id}");
+            var response = await httpClient.GetFromJsonAsync<Product>($"/products/{id}");
             return response!;
         }
 
         // Basket Endpoints
         public async Task<ShoppingCart> GetBasket(string userName)
         {
-            var response = await httpClient.GetFromJsonAsync<ShoppingCart>($"/apiservice/basket/{userName}");
+            var response = await httpClient.GetFromJsonAsync<ShoppingCart>($"/basket/{userName}");
             return response!;
         }
 
         public async Task<ShoppingCart> UpdateBasket(ShoppingCart shoppingCart)
         {
-            var response = await httpClient.PostAsJsonAsync($"/apiservice/basket", shoppingCart);
+            var response = await httpClient.PostAsJsonAsync($"/basket", shoppingCart);
             response.EnsureSuccessStatusCode();
             var updatedBasket = await response.Content.ReadFromJsonAsync<ShoppingCart>();
             return updatedBasket!;
         }
 
-        public async Task<Order> CheckoutBasket(Order checkoutOrder)
+        public async Task CheckoutBasket(BasketCheckout basketCheckout)
         {
-            var response = await httpClient.PostAsJsonAsync($"/apiservice/basket/checkout", checkoutOrder);
-            response.EnsureSuccessStatusCode();
-            var order = await response.Content.ReadFromJsonAsync<Order>();
-            return order!;
+            var response = await httpClient.PostAsJsonAsync($"/basket/checkout", basketCheckout);
+            response.EnsureSuccessStatusCode();        
         }
 
         // Order Endpoints
         public async Task<List<Order>> GetAllOrders()
         {
-            var response = await httpClient.GetFromJsonAsync<List<Order>>($"/apiservice/orders");
+            var response = await httpClient.GetFromJsonAsync<List<Order>>($"/orders");
             return response!;
         }
 
         public async Task<List<Order>> GetOrdersByUserName(string userName)
         {
-            var response = await httpClient.GetFromJsonAsync<List<Order>>($"/apiservice/orders/{userName}");
+            var response = await httpClient.GetFromJsonAsync<List<Order>>($"/orders/{userName}");
             return response!;
         }
 
@@ -65,7 +62,7 @@ namespace WebApp.ApiClients
 
             try
             {
-                basket = await GetBasket(userName);            
+                basket = await GetBasket(userName);
             }
             catch
             {

@@ -1,18 +1,20 @@
-using ApiService.Models;
+using Catalog.Data;
+using Catalog.Models;
+using Microsoft.EntityFrameworkCore;
+using Shared.Data.Seed;
 
-namespace ApiService.Data
+namespace Catalog.Seed
 {
-    public class DataSeeder
+    public class CatalogDataSeeder(CatalogDbContext dbContext) : IDataSeeder
     {
-        public static void Seed(EShopDbContext dbContext)
+        public async Task SeedAllAsync()
         {
-            if (dbContext.Products.Any())
-                return;
-
-            dbContext.Products.AddRange(Products);
-            dbContext.SaveChanges();
+            if (!await dbContext.Products.AnyAsync())
+            {
+                await dbContext.Products.AddRangeAsync(Products);
+                await dbContext.SaveChangesAsync();
+            }
         }
-
         public static IEnumerable<Product> Products =>
         [
             new Product { Name = "Solar Powered Flashlight", Description = "A fantastic product for outdoor enthusiasts", Price = 19.99m, ImageUrl = "product1.png" },

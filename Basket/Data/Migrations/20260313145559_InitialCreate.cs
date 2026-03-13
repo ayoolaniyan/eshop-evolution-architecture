@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ApiService.Data.Migrations
+namespace Basket.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -11,42 +11,12 @@ namespace ApiService.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserName = table.Column<string>(type: "text", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
-                    LastName = table.Column<string>(type: "text", nullable: false),
-                    EmailAddress = table.Column<string>(type: "text", nullable: false),
-                    AddressLine = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Products",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    ImageUrl = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Products", x => x.Id);
-                });
+            migrationBuilder.EnsureSchema(
+                name: "basket");
 
             migrationBuilder.CreateTable(
                 name: "ShoppingCarts",
+                schema: "basket",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -60,6 +30,7 @@ namespace ApiService.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "ShoppingCartItems",
+                schema: "basket",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -77,6 +48,7 @@ namespace ApiService.Data.Migrations
                     table.ForeignKey(
                         name: "FK_ShoppingCartItems_ShoppingCarts_ShoppingCartId",
                         column: x => x.ShoppingCartId,
+                        principalSchema: "basket",
                         principalTable: "ShoppingCarts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -84,11 +56,13 @@ namespace ApiService.Data.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShoppingCartItems_ShoppingCartId",
+                schema: "basket",
                 table: "ShoppingCartItems",
                 column: "ShoppingCartId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShoppingCarts_UserName",
+                schema: "basket",
                 table: "ShoppingCarts",
                 column: "UserName",
                 unique: true);
@@ -98,16 +72,12 @@ namespace ApiService.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "ShoppingCartItems",
+                schema: "basket");
 
             migrationBuilder.DropTable(
-                name: "Products");
-
-            migrationBuilder.DropTable(
-                name: "ShoppingCartItems");
-
-            migrationBuilder.DropTable(
-                name: "ShoppingCarts");
+                name: "ShoppingCarts",
+                schema: "basket");
         }
     }
 }

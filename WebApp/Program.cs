@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+builder.AddRedisOutputCache("cache");
+
 builder.Services.AddHttpClient<ApiServiceClient>(client =>
 {
     client.BaseAddress = new("https+http://apiservice");
@@ -28,10 +30,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
 app.UseAntiforgery();
 
+app.UseOutputCache();
+
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

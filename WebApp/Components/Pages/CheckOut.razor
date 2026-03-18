@@ -1,16 +1,16 @@
-﻿@page "/checkout"  
-@inject ApiServiceClient ApiServiceClient
-@inject NavigationManager NavigationManager  
-@rendermode InteractiveServer  
+﻿@page "/checkout"
+@inject BasketApiClient BasketApiClient
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
-<PageTitle>CheckOut</PageTitle>  
+<PageTitle>CheckOut</PageTitle>
 
 <h1>CheckOut</h1>
 
 @if (!isCheckoutCompleted)
 {
-    <div class="row">   
-        <div class="col-md-6">       
+    <div class="row">
+        <div class="col-md-6">
             <EditForm method="post" Model="basketCheckout" OnValidSubmit="PerformCheckout" FormName="create" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" role="alert" />
@@ -89,28 +89,28 @@ else
     private bool isCheckoutCompleted = false;
 
     protected override async Task OnInitializedAsync()
-    {  
-        basket = await ApiServiceClient.LoadUserBasket();
+    {
+        basket = await BasketApiClient.LoadUserBasket();
     }
 
-   private async Task PerformCheckout()  
-   {        
-       basketCheckout.UserName = basket.UserName;
-       basketCheckout.TotalPrice = basket.TotalPrice;
+    private async Task PerformCheckout()
+    {
+        basketCheckout.UserName = basket.UserName;
+        basketCheckout.TotalPrice = basket.TotalPrice;
 
-       await ApiServiceClient.CheckoutBasket(basketCheckout);
+        await BasketApiClient.CheckoutBasket(basketCheckout);
 
-       // Mark checkout as completed
-       isCheckoutCompleted = true;
-   }
+        // Mark checkout as completed
+        isCheckoutCompleted = true;
+    }
 
-   private void NavigateToCart()
-   {
-       NavigationManager.NavigateTo("/cart");
-   }
+    private void NavigateToCart()
+    {
+        NavigationManager.NavigateTo("/cart");
+    }
 
-   private void NavigateToOrders()
-   {
-       NavigationManager.NavigateTo("/orders");
-   }
+    private void NavigateToOrders()
+    {
+        NavigationManager.NavigateTo("/orders");
+    }
 }

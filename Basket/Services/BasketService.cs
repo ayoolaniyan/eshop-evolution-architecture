@@ -1,35 +1,24 @@
-using Basket.Data;
-using Basket.Models;
-using Microsoft.EntityFrameworkCore;
-using Ordering.Services;
+using System.Text.Json;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Basket.Services
 {
-    public class BasketService(BasketDbContext dbContext, OrderService orderService)
+    public class BasketService(IDistributedCache cache, OrderingApiClient orderingApiClient)
     {
         public async Task<ShoppingCart?> GetBasket(string userName)
         {
-            var shoppingCart = await dbContext.ShoppingCarts
-                    .Include(cart => cart.Items)
-                    .FirstOrDefaultAsync(cart => cart.UserName == userName);
-
-            return shoppingCart;
+            var basket = await cache.GetStringAsync(userName);
+            return string.IsNullOrEmpty(basket) ? null :
+                JsonSerializer.Deserialize<ShoppingCart>(basket);
         }
 
-        public async Task<ShoppingCart> UpdateBasket(ShoppingCart shoppingCart)
+        public async Task UpdateBasket(ShoppingCart basket)
         {
-            var existingCart = await GetBasket(shoppingCart.UserName);
-            if (existingCart is null)
-            {
-                dbContext.ShoppingCarts.Add(shoppingCart);
-            }
-            else
-            {
-                existingCart.Items = shoppingCart.Items;
-                dbContext.ShoppingCarts.Update(existingCart);
-            }
-            await dbContext.SaveChangesAsync();
-            return shoppingCart;
+            // Next Section:
+            // Before update(Add/remove Item) into SC, we should call Catalog ms GetProductById method
+            // Get latest product information and set Price and ProductName when adding item into SC       
+
+            await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket));
         }
 
         public async Task CheckoutBasket(BasketCheckout basketCheckout)
@@ -51,8 +40,8 @@ namespace Basket.Services
 
             // send basket checkout event to rabbitmq using masstransit
             // TODO: publish checkout basket event and create order        
-            // WORKAROUND: Added Ordering project reference and inject and method call OrderService
-            var order = new Ordering.Models.Order
+            // WORKAROUND: Added Ordering project api reference and inject and sync call Ordering
+            var order = new OrderDto
             {
                 UserName = basketCheckout.UserName,
                 TotalPrice = basketCheckout.TotalPrice,
@@ -61,21 +50,15 @@ namespace Basket.Services
                 EmailAddress = basketCheckout.EmailAddress,
                 AddressLine = basketCheckout.AddressLine
             };
-            await orderService.CreateOrderAsync(order);
+            await orderingApiClient.CreateOrder(order);
 
             // delete the basket
-            dbContext.ShoppingCarts.Remove(shoppingCart);
-            await dbContext.SaveChangesAsync();
+            await DeleteBasket(basketCheckout.UserName);        
         }
 
         public async Task DeleteBasket(string userName)
         {
-            var shoppingCart = await GetBasket(userName);
-            if (shoppingCart is not null)
-            {
-                dbContext.ShoppingCarts.Remove(shoppingCart);
-                await dbContext.SaveChangesAsync();
-            }
-        }
+            await cache.RemoveAsync(userName);
+        }   
     }
 }

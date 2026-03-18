@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Ordering.Models;
-using Ordering.Services;
-
 namespace Ordering.Endpoints
 {
     public static class OrderEndpoints
@@ -36,6 +26,15 @@ namespace Ordering.Endpoints
             .Produces<List<Order>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
+            // POST (Create)
+            group.MapPost("/", async (Order order, OrderService service) =>
+            {
+                await service.CreateOrderAsync(order);
+                return Results.Created($"/orders/{order.Id}", order);
+            })
+            .WithName("CreateOrder")
+            .Produces<Order>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest);
         }
     }
 }

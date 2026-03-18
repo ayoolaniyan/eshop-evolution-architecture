@@ -11,19 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Basket\Models\BasketCheckout.cs" Link="Models\BasketCheckout.cs" />
-    <Compile Include="..\Basket\Models\ShoppingCart.cs" Link="Models\ShoppingCart.cs" />
-    <Compile Include="..\Basket\Models\ShoppingCartItem.cs" Link="Models\ShoppingCartItem.cs" />
-    <Compile Include="..\Catalog\Models\Product.cs" Link="Models\Product.cs" />
-    <Compile Include="..\Ordering\Models\Order.cs" Link="Models\Order.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="9.3.1" />
+    <ProjectReference Include="..\ServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

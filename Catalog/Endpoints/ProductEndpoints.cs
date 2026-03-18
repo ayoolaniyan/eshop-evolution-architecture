@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Catalog.Models;
 using Catalog.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace Catalog.Endpoints
 {
@@ -81,6 +74,6 @@ namespace Catalog.Endpoints
             })
             .WithName("SearchProducts")
             .Produces<List<Product>>(StatusCodes.Status200OK);
-        }
+        }        
     }
 }

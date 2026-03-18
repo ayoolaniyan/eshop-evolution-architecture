@@ -16,7 +16,6 @@ namespace Catalog.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("catalog")
                 .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -47,7 +46,7 @@ namespace Catalog.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", "catalog");
+                    b.ToTable("Products");
                 });
 #pragma warning restore 612, 618
         }

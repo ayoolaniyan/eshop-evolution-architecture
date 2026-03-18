@@ -1,16 +1,10 @@
-using Basket.Models;
-using Basket.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-
 namespace Basket.Endpoints
 {
     public static class BasketEndpoints
     {
         public static void MapBasketEndpoints(this IEndpointRouteBuilder app)
         {
-            var group = app.MapGroup("/basket");
+            var group = app.MapGroup("basket");
 
             // GET by userName
             group.MapGet("/{userName}", async (string userName, BasketService service) =>
@@ -28,23 +22,24 @@ namespace Basket.Endpoints
             .Produces<ShoppingCart>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
-            // POST (Create or Update = Upsert)
+            // POST (Upsert)
             group.MapPost("/", async (ShoppingCart shoppingCart, BasketService service) =>
             {
-                var updatedCart = await service.UpdateBasket(shoppingCart);
-                return Results.Ok(updatedCart);
+                await service.UpdateBasket(shoppingCart);
+                return Results.Created("GetBasket", shoppingCart);
             })
             .WithName("UpdateBasket")
-            .Produces<ShoppingCart>(StatusCodes.Status200OK);
+            .Produces<ShoppingCart>(StatusCodes.Status201Created);
 
-            // POST (Checkout)
+            // POST Checkout
             group.MapPost("/checkout", async (BasketCheckout basketCheckout, BasketService service) =>
             {
                 await service.CheckoutBasket(basketCheckout);
                 return Results.NoContent();
             })
             .WithName("CheckoutBasket")
-            .Produces(StatusCodes.Status204NoContent);
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest);
 
             // DELETE
             group.MapDelete("/{userName}", async (string userName, BasketService service) =>
@@ -53,7 +48,7 @@ namespace Basket.Endpoints
                 return Results.NoContent();
             })
             .WithName("DeleteBasket")
-            .Produces(StatusCodes.Status204NoContent);
+            .Produces(StatusCodes.Status204NoContent);        
         }
     }
 }

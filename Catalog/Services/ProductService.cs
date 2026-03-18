@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Catalog.Data;
 using Catalog.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +13,7 @@ namespace Catalog.Services
 
         public async Task<Product?> GetProductByIdAsync(int id)
         {
-            return await dbContext.Products.FindAsync(id);        
+            return await dbContext.Products.FindAsync(id);
         }
 
         public async Task CreateProductAsync(Product product)

@@ -3,24 +3,32 @@ using WebApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.AddServiceDefaults();
 
-builder.AddRedisOutputCache("cache");
-
-builder.Services.AddHttpClient<ApiServiceClient>(client =>
+builder.Services.AddHttpClient<CatalogApiClient>(client =>
 {
-    client.BaseAddress = new("https+http://apiservice");
+    client.BaseAddress = new("https+http://catalog");
 });
 
-// Add services to the container.
+builder.Services.AddHttpClient<BasketApiClient>(client =>
+{
+    client.BaseAddress = new("https+http://basket");
+});
+
+builder.Services.AddHttpClient<OrderingApiClient>(client =>
+{
+    client.BaseAddress = new("https+http://ordering");
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 app.MapDefaultEndpoints();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -32,10 +40,7 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.UseOutputCache();
-
 app.MapStaticAssets();
-
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

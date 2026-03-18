@@ -1,5 +1,5 @@
 ﻿@page "/cart"
-@inject ApiServiceClient ApiServiceClient
+@inject BasketApiClient BasketApiClient
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -60,14 +60,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        basket = await ApiServiceClient.LoadUserBasket();
+        basket = await BasketApiClient.LoadUserBasket();
     }
 
     private async Task RemoveItem(ShoppingCartItem item)
     {
         basket.Items.Remove(item);
 
-        await ApiServiceClient.UpdateBasket(basket);
+        await BasketApiClient.UpdateBasket(basket);
     }
 
     private void ContinueShopping()
@@ -78,5 +78,5 @@ else
     private void Checkout()
     {
         NavigationManager.NavigateTo("/checkout");
-    }    
+    }
 }

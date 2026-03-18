@@ -1,5 +1,5 @@
 ﻿@page "/orders"
-@inject ApiServiceClient ApiServiceClient
+@inject OrderingApiClient OrderingApiClient
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
 
@@ -34,7 +34,7 @@ else
                     <td>@order.FirstName</td>
                     <td>@order.LastName</td>
                     <td>@order.EmailAddress</td>
-                    <td>@order.AddressLine</td>                    
+                    <td>@order.AddressLine</td>
                 </tr>
             }
         </tbody>
@@ -43,10 +43,10 @@ else
 
 
 @code {
-    private List<Order>? orders;    
+    private List<Order>? orders;
 
     protected override async Task OnInitializedAsync()
-    {        
-        orders = await ApiServiceClient.GetAllOrders();
+    {
+        orders = await OrderingApiClient.GetAllOrders();
     }
 }

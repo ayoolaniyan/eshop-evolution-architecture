@@ -1,10 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace Ordering.Models
 {
     public class Order
     {
         public int Id { get; set; }
         public string UserName { get; set; } = default!;
+
+        [Precision(18, 4)]
         public decimal TotalPrice { get; set; }
+
+        // Address    
         public string FirstName { get; set; } = default!;
         public string LastName { get; set; } = default!;
         public string EmailAddress { get; set; } = default!;

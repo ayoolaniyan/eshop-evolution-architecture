@@ -1,5 +1,5 @@
 ﻿@page "/cart"
-@inject BasketApiClient BasketApiClient
+@inject YarpApiClient YarpApiClient
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -60,14 +60,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        basket = await BasketApiClient.LoadUserBasket();
+        basket = await YarpApiClient.LoadUserBasket();
     }
 
     private async Task RemoveItem(ShoppingCartItem item)
     {
         basket.Items.Remove(item);
 
-        await BasketApiClient.UpdateBasket(basket);
+        await YarpApiClient.UpdateBasket(basket);
     }
 
     private void ContinueShopping()

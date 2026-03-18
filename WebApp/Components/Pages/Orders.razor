@@ -1,5 +1,5 @@
 ﻿@page "/orders"
-@inject OrderingApiClient OrderingApiClient
+@inject YarpApiClient YarpApiClient
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
 
@@ -47,6 +47,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        orders = await OrderingApiClient.GetAllOrders();
+        orders = await YarpApiClient.GetAllOrders();
     }
 }

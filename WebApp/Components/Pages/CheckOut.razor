@@ -1,5 +1,5 @@
 ﻿@page "/checkout"
-@inject BasketApiClient BasketApiClient
+@inject YarpApiClient YarpApiClient
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -90,7 +90,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        basket = await BasketApiClient.LoadUserBasket();
+        basket = await YarpApiClient.LoadUserBasket();
     }
 
     private async Task PerformCheckout()
@@ -98,7 +98,7 @@ else
         basketCheckout.UserName = basket.UserName;
         basketCheckout.TotalPrice = basket.TotalPrice;
 
-        await BasketApiClient.CheckoutBasket(basketCheckout);
+        await YarpApiClient.CheckoutBasket(basketCheckout);
 
         // Mark checkout as completed
         isCheckoutCompleted = true;

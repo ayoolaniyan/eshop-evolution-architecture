@@ -1,6 +1,3 @@
-using Catalog.Models;
-using Catalog.Services;
-
 namespace Catalog.Endpoints
 {
     public static class ProductEndpoints

@@ -1,24 +1,11 @@
-using WebApp.ApiClients;
-using WebApp.Components;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.AddServiceDefaults();
 
-builder.Services.AddHttpClient<CatalogApiClient>(client =>
+builder.Services.AddHttpClient<YarpApiClient>(client =>
 {
-    client.BaseAddress = new("https+http://catalog");
-});
-
-builder.Services.AddHttpClient<BasketApiClient>(client =>
-{
-    client.BaseAddress = new("https+http://basket");
-});
-
-builder.Services.AddHttpClient<OrderingApiClient>(client =>
-{
-    client.BaseAddress = new("https+http://ordering");
+    client.BaseAddress = new("https+http://yarpapigateway");
 });
 
 builder.Services.AddRazorComponents()

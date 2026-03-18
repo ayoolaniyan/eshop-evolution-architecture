@@ -1,6 +1,5 @@
 ﻿@page "/products"
-@inject CatalogApiClient CatalogApiClient
-@inject BasketApiClient BasketApiClient
+@inject YarpApiClient YarpApiClient
 @attribute [StreamRendering(true)]
 @rendermode InteractiveServer
 
@@ -59,12 +58,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        products = await CatalogApiClient.GetProducts();
+        products = await YarpApiClient.GetProducts();
     }
 
     private async Task AddToCart(Product product)
     {
-        var basket = await BasketApiClient.LoadUserBasket();
+        var basket = await YarpApiClient.LoadUserBasket();
 
         // Check if the item already exists in the basket
         var existingItem = basket.Items.FirstOrDefault(item => item.ProductId == product.Id);
@@ -86,7 +85,7 @@ else
                 });
         }
 
-        await BasketApiClient.UpdateBasket(basket);
+        await YarpApiClient.UpdateBasket(basket);
 
         // Show notification
         showNotification = true;

@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Basket\Basket.csproj" />
     <ProjectReference Include="..\Catalog\Catalog.csproj" />
     <ProjectReference Include="..\Ordering\Ordering.csproj" />
+    <ProjectReference Include="..\YarpApiGateway\YarpApiGateway.csproj" />
   </ItemGroup>
 
 </Project>

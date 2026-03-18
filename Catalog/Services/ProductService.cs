@@ -1,7 +1,3 @@
-using Catalog.Data;
-using Catalog.Models;
-using Microsoft.EntityFrameworkCore;
-
 namespace Catalog.Services
 {
     public class ProductService(CatalogDbContext dbContext)

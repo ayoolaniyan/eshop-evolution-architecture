@@ -1,33 +1,62 @@
-using System.Text.Json;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Shared.Messaging.Events;
 
 namespace Basket.Services
 {
-    public class BasketService(IDistributedCache cache, 
+    public class BasketService(HybridCache cache, 
+                BasketDbContext dbContext,
                 CatalogApiClient catalogApiClient, 
                 IBus bus)
     {
         public async Task<ShoppingCart?> GetBasket(string userName)
         {
-            var basket = await cache.GetStringAsync(userName);
-            return string.IsNullOrEmpty(basket) ? null :
-                JsonSerializer.Deserialize<ShoppingCart>(basket);
+            var basket = await cache.GetOrCreateAsync(userName, async token =>
+            {
+                return await dbContext.ShoppingCarts
+                    .Include(x => x.Items)
+                    .FirstOrDefaultAsync(x => x.UserName == userName, token);
+            });
+
+            return basket;
         }
 
-        public async Task UpdateBasket(ShoppingCart basket)
+        public async Task UpdateBasket(ShoppingCart shoppingCart)
         {
             // Before update(Add/remove Item) into SC, we should call Catalog ms GetProductById method
             // Get latest product information and set Price and ProductName when adding item into SC
-            foreach (var item in basket.Items)
-            {
-                var product = await catalogApiClient.GetProductById(item.ProductId);
-                item.Price = product.Price;
-                item.ProductName = product.Name;
-            }
 
-            await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket));
+            var existingBasket = await dbContext.ShoppingCarts
+                    .Include(x => x.Items)
+                    .FirstOrDefaultAsync(x => x.UserName == shoppingCart.UserName);
+
+            if (existingBasket == null)
+            {
+                // new basket
+                dbContext.ShoppingCarts.Add(shoppingCart);
+                await dbContext.SaveChangesAsync();
+
+                await cache.SetAsync(shoppingCart.UserName, shoppingCart);
+            }
+            else
+            {
+                //update existing basket
+                existingBasket.Items = shoppingCart.Items;
+
+                //// removed: not necessary for caching section
+                //foreach (var item in existingBasket.Items)
+                //{
+                //    var product = await catalogApiClient.GetProductById(item.ProductId);
+                //    item.Price = product.Price;
+                //    item.ProductName = product.Name;
+                //}
+
+                dbContext.ShoppingCarts.Update(existingBasket);
+                await dbContext.SaveChangesAsync();
+
+                await cache.SetAsync(existingBasket.UserName, existingBasket);
+            }        
         }
 
         public async Task CheckoutBasket(BasketCheckout basketCheckout)
@@ -66,6 +95,10 @@ namespace Basket.Services
 
         public async Task DeleteBasket(string userName)
         {
+            await dbContext.ShoppingCarts
+                .Where(x => x.UserName == userName)
+                .ExecuteDeleteAsync();
+
             await cache.RemoveAsync(userName);
         }
 
@@ -82,7 +115,13 @@ namespace Basket.Services
             if (item != null)
             {
                 item.Price = price;
-                await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket));
+
+                //update db
+                dbContext.ShoppingCarts.Update(basket);
+                await dbContext.SaveChangesAsync();
+
+                //update cache
+                await cache.SetAsync(basket.UserName, basket);            
             }
         }
     }

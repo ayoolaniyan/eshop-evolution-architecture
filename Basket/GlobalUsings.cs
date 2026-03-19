@@ -5,3 +5,5 @@ global using Basket.Endpoints;
 global using Basket.ApiClients;
 global using System.Reflection;
 global using Shared.Messaging.Extensions;
+global using Basket.Data.Processors;
+global using Microsoft.Extensions.Caching.Hybrid;

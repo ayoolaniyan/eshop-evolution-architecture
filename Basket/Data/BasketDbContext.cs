@@ -8,6 +8,8 @@ namespace Basket.Data
         : base(options) { }
         public DbSet<ShoppingCart> ShoppingCarts { get; set; } = default!;
         public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; } = default!;
+        public DbSet<OutboxMessage> OutboxMessages { get; set; } = default!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<ShoppingCart>()

@@ -28,6 +28,8 @@ builder.Services.AddHttpClient<CatalogApiClient>(client =>
 
 builder.Services.AddMassTransitWithAssemblies(Assembly.GetExecutingAssembly());
 
+builder.Services.AddHostedService<OutboxProcessor>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

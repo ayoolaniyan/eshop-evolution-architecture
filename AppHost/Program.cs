@@ -39,7 +39,7 @@ var catalog = builder
         .WaitFor(rabbitmq);
 
 var basket = builder
-        .AddProject<Projects.Basket>("basket").WithReplicas(3)
+        .AddProject<Projects.Basket>("basket")
         .WithReference(basketdb)
         .WithReference(cache)
         .WithReference(catalog)
@@ -71,6 +71,6 @@ var webapp = builder
         .WithUrlForEndpoint("https", url => url.DisplayText = "EShop WebApp (HTTPS)")
         .WithUrlForEndpoint("http", url => url.DisplayText = "EShop WebApp (HTTP)")
         .WithReference(yarpapigateway)
-        .WaitFor(yarpapigateway);        
+        .WaitFor(yarpapigateway);
     
 builder.Build().Run();

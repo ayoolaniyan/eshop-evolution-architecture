@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -6,9 +7,7 @@ using Shared.Messaging.Events;
 namespace Basket.Services
 {
     public class BasketService(HybridCache cache, 
-                BasketDbContext dbContext,
-                CatalogApiClient catalogApiClient, 
-                IBus bus)
+                BasketDbContext dbContext)
     {
         public async Task<ShoppingCart?> GetBasket(string userName)
         {
@@ -65,32 +64,89 @@ namespace Basket.Services
             // Set totalprice on basketcheckout event message
             // Send basket checkout event to rabbitmq using masstransit
             // Delete the basket
-
-            // Get existing basket with total price
-            var shoppingCart = await GetBasket(basketCheckout.UserName);
-            if (shoppingCart is null)
+            
+            await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                throw new InvalidOperationException($"Shopping cart for user '{basketCheckout.UserName}' not found.");
-            }
+                await using var transaction = await dbContext.Database.BeginTransactionAsync();
+                try
+                {
+                    // Get existing basket with total price
+                    var shoppingCart = await dbContext.ShoppingCarts
+                    .Include(x => x.Items)
+                    .FirstOrDefaultAsync(x => x.UserName == basketCheckout.UserName);
 
-            // Set total price on basket checkout event message
-            basketCheckout.TotalPrice = shoppingCart.TotalPrice;
+                    if (shoppingCart is null)
+                    {
+                        throw new InvalidOperationException($"Shopping cart for user '{basketCheckout.UserName}' not found.");
+                    }
 
-            // Send basket checkout event to rabbitmq using masstransit
-            var integrationEvent = new BasketCheckoutIntegrationEvent
-            {
-                UserName = basketCheckout.UserName,
-                TotalPrice = shoppingCart.TotalPrice,
-                FirstName = basketCheckout.FirstName,
-                LastName = basketCheckout.LastName,
-                EmailAddress = basketCheckout.EmailAddress,
-                AddressLine = basketCheckout.AddressLine
-            };
-            // Publish checkout basket event and create order
-            await bus.Publish(integrationEvent);
+                    // Set total price on basket checkout event message
+                    basketCheckout.TotalPrice = shoppingCart.TotalPrice;
 
-            // Delete the basket
-            await DeleteBasket(basketCheckout.UserName);
+                    var integrationEvent = new BasketCheckoutIntegrationEvent
+                    {
+                        UserName = basketCheckout.UserName,
+                        TotalPrice = shoppingCart.TotalPrice,
+                        FirstName = basketCheckout.FirstName,
+                        LastName = basketCheckout.LastName,
+                        EmailAddress = basketCheckout.EmailAddress,
+                        AddressLine = basketCheckout.AddressLine
+                    };
+
+                    // Write a message to the outbox
+                    var outboxMessage = new OutboxMessage
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = typeof(BasketCheckoutIntegrationEvent).AssemblyQualifiedName!,
+                        Content = JsonSerializer.Serialize(integrationEvent),
+                        OccuredOn = DateTime.UtcNow
+                    };
+                    dbContext.OutboxMessages.Add(outboxMessage);
+
+                    // Delete the basket            
+                    dbContext.ShoppingCarts.Remove(shoppingCart);
+
+                    // Commit the transaction
+                    await dbContext.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    // Invalidate the Redis cache
+                    await cache.RemoveAsync(basketCheckout.UserName);                                
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    //throw;
+                }
+            });
+
+            ////// CHECKOUT BASKET WITHOUT OUTBOX
+            
+            /// // Get existing basket with total price
+            //var shoppingCart = await GetBasket(basketCheckout.UserName);
+            //if (shoppingCart is null)
+            //{
+            //    throw new InvalidOperationException($"Shopping cart for user '{basketCheckout.UserName}' not found.");
+            //}
+
+            //// Set total price on basket checkout event message
+            //basketCheckout.TotalPrice = shoppingCart.TotalPrice;
+
+            //// Send basket checkout event to rabbitmq using masstransit
+            //var integrationEvent = new BasketCheckoutIntegrationEvent
+            //{
+            //    UserName = basketCheckout.UserName,
+            //    TotalPrice = shoppingCart.TotalPrice,
+            //    FirstName = basketCheckout.FirstName,
+            //    LastName = basketCheckout.LastName,
+            //    EmailAddress = basketCheckout.EmailAddress,
+            //    AddressLine = basketCheckout.AddressLine
+            //};
+            //// Publish checkout basket event and create order
+            //await bus.Publish(integrationEvent);
+
+            //// Delete the basket
+            //await DeleteBasket(basketCheckout.UserName);
         }
 
         public async Task DeleteBasket(string userName)

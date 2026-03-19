@@ -1,11 +1,13 @@
 using System.Text.Json;
+using MassTransit;
 using Microsoft.Extensions.Caching.Distributed;
+using Shared.Messaging.Events;
 
 namespace Basket.Services
 {
     public class BasketService(IDistributedCache cache, 
                 CatalogApiClient catalogApiClient, 
-                OrderingApiClient orderingApiClient)
+                IBus bus)
     {
         public async Task<ShoppingCart?> GetBasket(string userName)
         {
@@ -30,12 +32,12 @@ namespace Basket.Services
 
         public async Task CheckoutBasket(BasketCheckout basketCheckout)
         {
-            // get existing basket with total price
+            // Get existing basket with total price
             // Set totalprice on basketcheckout event message
-            // send basket checkout event to rabbitmq using masstransit
-            // delete the basket
+            // Send basket checkout event to rabbitmq using masstransit
+            // Delete the basket
 
-            // get existing basket with total price
+            // Get existing basket with total price
             var shoppingCart = await GetBasket(basketCheckout.UserName);
             if (shoppingCart is null)
             {
@@ -45,27 +47,43 @@ namespace Basket.Services
             // Set total price on basket checkout event message
             basketCheckout.TotalPrice = shoppingCart.TotalPrice;
 
-            // send basket checkout event to rabbitmq using masstransit
-            // TODO: publish checkout basket event and create order        
-            // WORKAROUND: Added Ordering project api reference and inject and sync call Ordering
-            var order = new OrderDto
+            // Send basket checkout event to rabbitmq using masstransit
+            var integrationEvent = new BasketCheckoutIntegrationEvent
             {
                 UserName = basketCheckout.UserName,
-                TotalPrice = basketCheckout.TotalPrice,
+                TotalPrice = shoppingCart.TotalPrice,
                 FirstName = basketCheckout.FirstName,
                 LastName = basketCheckout.LastName,
                 EmailAddress = basketCheckout.EmailAddress,
                 AddressLine = basketCheckout.AddressLine
             };
-            await orderingApiClient.CreateOrder(order);
+            // Publish checkout basket event and create order
+            await bus.Publish(integrationEvent);
 
-            // delete the basket
-            await DeleteBasket(basketCheckout.UserName);        
+            // Delete the basket
+            await DeleteBasket(basketCheckout.UserName);
         }
 
         public async Task DeleteBasket(string userName)
         {
             await cache.RemoveAsync(userName);
-        }   
+        }
+
+        internal async Task UpdateBasketItemProductPrices(int productId, decimal price)
+        {
+            // IDistributedCache not supported list of keys function
+            // https://github.com/dotnet/runtime/issues/36402
+
+            var basket = await GetBasket("swn");
+
+            if (basket == null) return;
+
+            var item = basket!.Items.FirstOrDefault(x => x.ProductId == productId);
+            if (item != null)
+            {
+                item.Price = price;
+                await cache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket));
+            }
+        }
     }
 }

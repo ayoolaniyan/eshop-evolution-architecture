@@ -117,9 +117,9 @@ Content-Type: application/json
 {    
     "UserName": "swn",
     "TotalPrice": 0,
-    "FirstName": "Mehmet",
-    "LastName": "Ozkaya",
-    "EmailAddress": "abc@abc.com",
+    "FirstName": "ayyite",
+    "LastName": "ola",
+    "EmailAddress": "ayyite@ayyite.com",
     "AddressLine": "Random Address Information"
 }
 
@@ -144,9 +144,9 @@ Content-Type: application/json
 {
     "UserName": "swn",
     "TotalPrice": 259.99,
-    "FirstName": "Mehmet",
-    "LastName": "Ozkaya",
-    "EmailAddress": "asd@asd.com",
+    "FirstName": "ayyite",
+    "LastName": "ola",
+    "EmailAddress": "ayyite@ayyite.com",
     "AddressLine": "Istanbul"    
 }
 ###

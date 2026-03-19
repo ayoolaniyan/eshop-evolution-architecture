@@ -12,10 +12,7 @@ builder.Services.AddHttpClient<CatalogApiClient>(client =>
     client.BaseAddress = new("https+http://catalog");
 });
 
-builder.Services.AddHttpClient<OrderingApiClient>(client =>
-{
-    client.BaseAddress = new("https+http://ordering");
-});
+builder.Services.AddMassTransitWithAssemblies(Assembly.GetExecutingAssembly());
 
 var app = builder.Build();
 

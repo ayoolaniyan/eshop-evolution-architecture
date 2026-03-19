@@ -2,6 +2,7 @@ namespace WebApp.ApiClients
 {
     public class YarpApiClient(HttpClient httpClient)
     {
+        //// Catalog Endpoints
         public async Task<List<Product>> GetProducts()
         {
             var response = await httpClient.GetFromJsonAsync<List<Product>>($"/catalog-service/products");

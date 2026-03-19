@@ -1,6 +1,9 @@
+using MassTransit;
+using Shared.Messaging.Events;
+
 namespace Catalog.Services
 {
-    public class ProductService(CatalogDbContext dbContext)
+    public class ProductService(CatalogDbContext dbContext, IBus bus)
     {
         public async Task<IEnumerable<Product>> GetProductsAsync()
         {
@@ -23,16 +26,16 @@ namespace Catalog.Services
             // if price has changed, raise ProductPriceChanged integration event
             if (updatedProduct.Price != inputProduct.Price)
             {
-                //// Publish product price changed integration event for update basket prices
-                //var integrationEvent = new ProductPriceChangedIntegrationEvent
-                //{
-                //    ProductId = updatedProduct.Id, // Id only comes from db entity
-                //    Name = inputProduct.Name,
-                //    Description = inputProduct.Description,
-                //    Price = inputProduct.Price, //set updated product price
-                //    ImageUrl = inputProduct.ImageUrl
-                //};
-                //await bus.Publish(integrationEvent);
+                // Publish product price changed integration event for update basket prices
+                var integrationEvent = new ProductPriceChangedIntegrationEvent
+                {
+                    ProductId = updatedProduct.Id, // Id only comes from db entity
+                    Name = inputProduct.Name,
+                    Description = inputProduct.Description,
+                    Price = inputProduct.Price, //set updated product price
+                    ImageUrl = inputProduct.ImageUrl
+                };
+                await bus.Publish(integrationEvent);
             }
 
             // update product with new values

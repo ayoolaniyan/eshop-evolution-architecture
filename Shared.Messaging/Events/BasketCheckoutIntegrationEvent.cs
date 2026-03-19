@@ -1,11 +1,9 @@
-namespace Basket.Models
+namespace Shared.Messaging.Events
 {
-    public class OrderDto
+    public record BasketCheckoutIntegrationEvent : IntegrationEvent
     {
         public string UserName { get; set; } = default!;
         public decimal TotalPrice { get; set; }
-
-        // Address    
         public string FirstName { get; set; } = default!;
         public string LastName { get; set; } = default!;
         public string EmailAddress { get; set; } = default!;

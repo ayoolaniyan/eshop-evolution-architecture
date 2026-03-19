@@ -71,6 +71,6 @@ namespace Catalog.Endpoints
             })
             .WithName("SearchProducts")
             .Produces<List<Product>>(StatusCodes.Status200OK);
-        }        
+        }
     }
 }

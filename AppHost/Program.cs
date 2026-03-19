@@ -22,28 +22,35 @@ var sqlServer = builder
 
 var orderdb = sqlServer.AddDatabase("orderdb");
 
+var rabbitmq = builder
+    .AddRabbitMQ("rabbitmq")
+    .WithManagementPlugin()
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
+
 // Projects
 var catalog = builder
         .AddProject<Projects.Catalog>("catalog")
         .WithReference(catalogdb)
-        .WaitFor(catalogdb);
+        .WithReference(rabbitmq)
+        .WaitFor(catalogdb)
+        .WaitFor(rabbitmq);
 
 var basket = builder
         .AddProject<Projects.Basket>("basket")
         .WithReference(cache)
         .WithReference(catalog)
+        .WithReference(rabbitmq)
         .WaitFor(cache)
-        .WaitFor(catalog);
+        .WaitFor(catalog)
+        .WaitFor(rabbitmq);
 
 var ordering = builder
         .AddProject<Projects.Ordering>("ordering")
         .WithReference(orderdb)
-        .WaitFor(orderdb);
-
-// for simplicity basket checkout performed sync call basket to ordering
-basket
-    .WithReference(ordering)
-    .WaitFor(ordering);
+        .WithReference(rabbitmq)
+        .WaitFor(orderdb)
+        .WaitFor(rabbitmq);
 
 var yarpapigateway = builder
         .AddProject<Projects.YarpApiGateway>("yarpapigateway")
@@ -60,6 +67,6 @@ var webapp = builder
         .WithUrlForEndpoint("https", url => url.DisplayText = "EShop WebApp (HTTPS)")
         .WithUrlForEndpoint("http", url => url.DisplayText = "EShop WebApp (HTTP)")
         .WithReference(yarpapigateway)
-        .WaitFor(yarpapigateway);
+        .WaitFor(yarpapigateway);        
     
 builder.Build().Run();

@@ -7,6 +7,8 @@ builder.AddSqlServerDbContext<OrderDbContext>(connectionName: "orderdb");
 
 builder.Services.AddScoped<OrderService>();
 
+builder.Services.AddMassTransitWithAssemblies(Assembly.GetExecutingAssembly());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

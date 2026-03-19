@@ -9,6 +9,8 @@ var postgres = builder
 
 var catalogdb = postgres.AddDatabase("catalogdb");
 
+var basketdb = postgres.AddDatabase("basketdb");
+
 var cache = builder
         .AddRedis("cache")
         .WithRedisInsight()
@@ -37,10 +39,12 @@ var catalog = builder
         .WaitFor(rabbitmq);
 
 var basket = builder
-        .AddProject<Projects.Basket>("basket")
+        .AddProject<Projects.Basket>("basket").WithReplicas(3)
+        .WithReference(basketdb)
         .WithReference(cache)
         .WithReference(catalog)
         .WithReference(rabbitmq)
+        .WaitFor(basketdb)
         .WaitFor(cache)
         .WaitFor(catalog)
         .WaitFor(rabbitmq);
